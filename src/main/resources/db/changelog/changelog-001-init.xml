@@ -27,7 +27,7 @@
             <column name="profession" type="INT">
                 <constraints nullable="false"/>
             </column>
-            <column name="birthday" type="DATE">
+            <column name="birthday" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
             <column name="banned" type="BOOLEAN">
