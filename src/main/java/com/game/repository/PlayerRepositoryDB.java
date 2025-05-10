@@ -4,11 +4,9 @@ import com.game.entity.Player;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.cfg.Configuration;
 import org.hibernate.query.NativeQuery;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Indexed;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.PreDestroy;
@@ -28,7 +26,7 @@ public class PlayerRepositoryDB implements IPlayerRepository {
     @Override
     public List<Player> getAll(int pageNumber, int pageSize) {
         try (Session session = sessionFactory.openSession()) {
-            NativeQuery<Player> nativeQuery = session.createNativeQuery("select * from rpg.player limit :pageSize offset :offset", Player.class);
+            NativeQuery<Player> nativeQuery = session.createNativeQuery("select * from rpg.player order by id ASC limit :pageSize offset :offset", Player.class);
             nativeQuery.setParameter("pageSize", pageSize);
             nativeQuery.setParameter("offset", pageNumber * pageSize);
             return nativeQuery.list();
@@ -46,22 +44,59 @@ public class PlayerRepositoryDB implements IPlayerRepository {
 
     @Override
     public Player save(Player player) {
-        return null;
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            session.persist(player);
+            transaction.commit();
+            return player;
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public Player update(Player player) {
-        return null;
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            session.update(player);
+            transaction.commit();
+            return player;
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public Optional<Player> findById(long id) {
-        return Optional.empty();
+        try (Session session = sessionFactory.openSession()) {
+            Player player = session.get(Player.class, id);
+            return Optional.of(player);
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 
     @Override
     public void delete(Player player) {
-
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+            session.delete(player);
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw new RuntimeException(e);
+        }
     }
 
     @PreDestroy
