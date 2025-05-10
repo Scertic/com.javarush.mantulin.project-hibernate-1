@@ -23,8 +23,8 @@ public class AppConfig {
     @Order(value = 0)
     public DataSource dataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName("org.postgresql.Driver");
-        dataSource.setUrl("jdbc:postgresql://localhost:5432/rpg_db");
+        dataSource.setDriverClassName("com.p6spy.engine.spy.P6SpyDriver");
+        dataSource.setUrl("jdbc:p6spy:postgresql://localhost:5432/rpg_db");
         dataSource.setUsername("postgres");
         dataSource.setPassword("postgres");
         return dataSource;
