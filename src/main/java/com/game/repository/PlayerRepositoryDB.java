@@ -1,9 +1,14 @@
 package com.game.repository;
 
 import com.game.entity.Player;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.query.NativeQuery;
+import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Indexed;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.PreDestroy;
@@ -17,18 +22,27 @@ public class PlayerRepositoryDB implements IPlayerRepository {
 
     @Autowired
     public PlayerRepositoryDB(SessionFactory sessionFactory) {
-       this.sessionFactory = sessionFactory;
+        this.sessionFactory = sessionFactory;
     }
 
     @Override
     public List<Player> getAll(int pageNumber, int pageSize) {
-        return null;
+        try (Session session = sessionFactory.openSession()) {
+            NativeQuery<Player> nativeQuery = session.createNativeQuery("select * from rpg.player limit :pageSize offset :offset", Player.class);
+            nativeQuery.setParameter("pageSize", pageSize);
+            nativeQuery.setParameter("offset", pageNumber * pageSize);
+            return nativeQuery.list();
+        }
     }
 
     @Override
     public int getAllCount() {
-        return 0;
+        try (Session session = sessionFactory.openSession()) {
+            Query<Long> findAll = session.createNamedQuery("Player.findAll", Long.class);
+            return findAll.uniqueResult().intValue();
+        }
     }
+
 
     @Override
     public Player save(Player player) {
