@@ -20,18 +20,28 @@ import java.util.Properties;
 @ComponentScan("com.game")
 public class AppConfig {
     @Bean
-    @Order(value = 0)
     public DataSource dataSource() {
+        String dbHost = System.getenv().getOrDefault("DB_HOST", "localhost");
+        String dbPort = System.getenv().getOrDefault("DB_PORT", "5432");
+        String dbName = System.getenv().getOrDefault("DB_NAME", "rpg_db");
+        String dbUser = System.getenv().getOrDefault("DB_USER", "postgres");
+        String dbPass = System.getenv().getOrDefault("DB_PASS", "postgres");
+
+        String url = "jdbc:p6spy:postgresql://" + dbHost + ":" + dbPort + "/" + dbName;
+
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("com.p6spy.engine.spy.P6SpyDriver");
-        dataSource.setUrl("jdbc:p6spy:postgresql://localhost:5432/rpg_db");
-        dataSource.setUsername("postgres");
-        dataSource.setPassword("postgres");
+        dataSource.setUrl(url);
+        dataSource.setUsername(dbUser);
+        dataSource.setPassword(dbPass);
+
+
+
+
         return dataSource;
     }
 
     @Bean
-    @Order(value = 1)
     public SpringLiquibase liquibase(DataSource dataSource) {
         SpringLiquibase liquibase = new SpringLiquibase();
         liquibase.setDataSource(dataSource);
