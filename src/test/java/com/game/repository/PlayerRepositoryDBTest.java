@@ -1,8 +1,6 @@
 package com.game.repository;
 
 import com.game.entity.Player;
-import com.game.entity.Profession;
-import com.game.entity.Race;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -11,10 +9,9 @@ import org.hibernate.query.Query;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -26,6 +23,7 @@ class PlayerRepositoryDBTest {
     Session session;
     PlayerRepositoryDB playerRepositoryDB;
     Transaction transaction;
+
     @BeforeEach
     void init() {
         sessionFactory = mock(SessionFactory.class);
@@ -84,9 +82,27 @@ class PlayerRepositoryDBTest {
 
         verify(session).persist(preSave);
         verify(transaction).commit();
+        verify(transaction, never()).rollback();
         verify(session).close();
         assertInstanceOf(Player.class, save);
         assertSame(preSave, save);
+    }
+
+    @Test
+    void save_shouldReturnRuntimeException() {
+        Player preSave = new Player();
+        when(sessionFactory.openSession()).thenReturn(session);
+        when(session.beginTransaction()).thenReturn(transaction);
+        doThrow(new RuntimeException()).when(session).persist(preSave);
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            playerRepositoryDB.save(preSave);
+        });
+
+        verify(transaction, never()).commit();
+        verify(transaction).rollback();
+        verify(session).close();
+        assertInstanceOf(RuntimeException.class, exception);
     }
 
     @Test
@@ -99,6 +115,7 @@ class PlayerRepositoryDBTest {
 
         verify(session).update(preSave);
         verify(transaction).commit();
+        verify(transaction, never()).rollback();
         verify(session).close();
         assertInstanceOf(Player.class, save);
         assertSame(preSave, save);
@@ -106,13 +123,30 @@ class PlayerRepositoryDBTest {
 
     @Test
     void findById_shouldReturnOptionalOfPlayer() {
+        Player player = new Player();
+        when(sessionFactory.openSession()).thenReturn(session);
+        when(session.get(Player.class, 1L)).thenReturn(player);
+
+        Optional<Player> finded = playerRepositoryDB.findById(1);
+
+        verify(session).get(Player.class, 1L);
+        verify(session).close();
+        assertInstanceOf(Optional.class, finded);
+        assertInstanceOf(Player.class, finded.get());
     }
 
     @Test
     void delete() {
+        Player player = new Player();
+        when(sessionFactory.openSession()).thenReturn(session);
+        when(session.beginTransaction()).thenReturn(transaction);
+
+        playerRepositoryDB.delete(player);
+
+        verify(session).delete(player);
+        verify(transaction).commit();
+        verify(transaction, never()).rollback();
+        verify(session).close();
     }
 
-    @Test
-    void beforeStop() {
-    }
 }
