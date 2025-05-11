@@ -24,6 +24,7 @@ public class Player {
     @Column(nullable = false)
     private Race race;
 
+    @Enumerated(EnumType.ORDINAL)
     @Column(name = "profession", nullable = false)
     private Profession profession;
 

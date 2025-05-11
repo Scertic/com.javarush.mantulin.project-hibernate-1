@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import javax.sql.DataSource;
@@ -34,9 +33,6 @@ public class AppConfig {
         dataSource.setUrl(url);
         dataSource.setUsername(dbUser);
         dataSource.setPassword(dbPass);
-
-
-
 
         return dataSource;
     }
